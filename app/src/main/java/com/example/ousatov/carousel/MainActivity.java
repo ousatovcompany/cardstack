@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ItemOverviewFragment overviewFragment = new ItemOverviewFragment();
-        displayFragment(overviewFragment, true);
+        displayFragment(overviewFragment, false);
     }
 
     @Override
