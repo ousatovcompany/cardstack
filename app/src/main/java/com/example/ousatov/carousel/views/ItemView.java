@@ -138,11 +138,11 @@ public class ItemView extends FrameLayout {
     }
 
     private boolean cardBeyondLeftBorder() {
-        return (getX() < -150);
+        return (initialX - getX() > 150);
     }
 
     private boolean cardBeyondRightBorder() {
-        return (getX() > 150);
+        return (getX() - initialX > 150);
     }
 
     private ViewPropertyAnimator resetCardPosition() {
