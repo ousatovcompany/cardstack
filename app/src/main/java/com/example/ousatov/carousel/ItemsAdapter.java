@@ -68,8 +68,9 @@ public class ItemsAdapter extends BaseAdapter {
 
         itemView.setItem(item);
         if (position == size - 1) {
-            itemView.setSwipeCallback(callback);
-
+            if (size > 1) {
+                itemView.setSwipeCallback(callback);
+            }
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -79,6 +80,10 @@ public class ItemsAdapter extends BaseAdapter {
         }
 
         return view;
+    }
+
+    public void setList(List<Item> data) {
+        this.data = data;
     }
 
 }

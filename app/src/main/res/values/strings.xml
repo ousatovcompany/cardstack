@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">carousel</string>
+    <string name="str_nothing_delete">Nothing to delete</string>
+    <string name="str_items_info">Item %1$s from %2$s</string>
 </resources>
