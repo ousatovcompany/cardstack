@@ -1,10 +1,11 @@
 package com.example.ousatov.carousel.fragments;
 
 import android.animation.Animator;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -21,6 +22,7 @@ import com.example.ousatov.carousel.ItemsAdapter;
 import com.example.ousatov.carousel.R;
 import com.example.ousatov.carousel.data.Item;
 import com.example.ousatov.carousel.utils.DialogAlertUtils;
+import com.example.ousatov.carousel.utils.ItemSaveUtils;
 import com.example.ousatov.carousel.views.CardStackView;
 import com.example.ousatov.carousel.views.ItemView;
 
@@ -37,6 +39,8 @@ public class ItemOverviewFragment extends Fragment {
     private TextView deleteBtn;
     private int currentItem = 0;
     private TextView itemsInfo;
+    private final String LIST_SIZE_KEY = "list_size_key";
+    private final String LIST_ITEM_KEY = "list_item_key";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,14 +98,7 @@ public class ItemOverviewFragment extends Fragment {
     }
 
     private void loadItems() {
-        //Stub
-        list = new ArrayList<>();
-        list.add(new Item("555", 5, new ColorDrawable(Color.BLACK)));
-        list.add(new Item("111", 1, new ColorDrawable(Color.BLACK)));
-        list.add(new Item("444", 4, new ColorDrawable(Color.BLACK)));
-        list.add(new Item("333", 3, new ColorDrawable(Color.BLACK)));
-        list.add(new Item("222", 2, new ColorDrawable(Color.BLACK)));
-        list.add(new Item("666", 6, new ColorDrawable(Color.BLACK)));
+        list = loadArray();
     }
 
     private List<Item> prepareOrderElementOfListForAdapter() {
@@ -128,6 +125,9 @@ public class ItemOverviewFragment extends Fragment {
 
         @Override
         public void onAnimationEnd(Animator animator) {
+            if (list.size() < 1) {
+                return;
+            }
             rootStack.animateStack().setListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
@@ -168,6 +168,19 @@ public class ItemOverviewFragment extends Fragment {
         public void onClick(View view) {
             switch (view.getId()) {
                 case R.id.addTv:
+                    Item newItem = new Item("" + list.size(), list.size(), Color.BLACK);
+                    int positionToInsert = 0;
+                    if (list.size() < ItemsAdapter.MAX_NUMBER_VOUCHERS) {
+                        positionToInsert = 0;
+                    } else {
+                        positionToInsert = ItemsAdapter.MAX_NUMBER_VOUCHERS;
+                    }
+                    list.add(positionToInsert, newItem);
+                    setItemsInfo();
+                    saveArray();
+                    iadapter.setList(list);
+                    iadapter.notifyDataSetChanged();
+                    rootStack.draw();
                     break;
                 case R.id.deleteTv:
                     if (list.isEmpty()) {
@@ -195,6 +208,8 @@ public class ItemOverviewFragment extends Fragment {
                                         }
                                         iadapter.setList(list);
                                         iadapter.notifyDataSetChanged();
+                                        saveArray();
+                                        setItemsInfo();
                                         rootStack.animateTopcardRight().setListener(animationListener);
                                     }
 
@@ -221,6 +236,10 @@ public class ItemOverviewFragment extends Fragment {
     }
 
     private void setItemsInfo() {
+        if (list.isEmpty()) {
+            itemsInfo.setText("");
+            return;
+        }
         String strInfo = String.format(getString(R.string.str_items_info), currentItem, list.size());
         String strCurrentItem = "" + currentItem;
         String strListSize = "" + list.size();
@@ -237,5 +256,24 @@ public class ItemOverviewFragment extends Fragment {
         span.setSpan(new StyleSpan(Typeface.BOLD), indStart2, strInfo.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         itemsInfo.setText(span);
+    }
+
+    public void saveArray() {
+        ItemSaveUtils.getInstance(getContext()).clear();
+        ItemSaveUtils.getInstance(getContext()).set(LIST_SIZE_KEY, list.size());
+
+        for (int i = 0; i < list.size(); i++) {
+            ItemSaveUtils.getInstance(getContext()).set(LIST_ITEM_KEY + i, list.get(i).serializeItem());
+        }
+    }
+
+    public ArrayList<Item> loadArray() {
+        ArrayList<Item> result = new ArrayList<>();
+        long size = ItemSaveUtils.getInstance(getContext()).getLong(LIST_SIZE_KEY, 0);
+
+        for (int i = 0; i < size; i++) {
+            result.add(Item.deserializeItem(ItemSaveUtils.getInstance(getContext()).getString(LIST_ITEM_KEY + i, "")));
+        }
+        return result;
     }
 }
