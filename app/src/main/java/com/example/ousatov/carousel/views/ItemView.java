@@ -2,6 +2,7 @@ package com.example.ousatov.carousel.views;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewPropertyAnimator;
@@ -49,14 +50,9 @@ public class ItemView extends FrameLayout {
     }
 
     public void setItem(Item item) {
-        image.setImageDrawable(item.getColor());
+        image.setImageDrawable(new ColorDrawable(item.getColor()));
         tvId.setText(item.getData());
     }
-
-//    public void setActivationEnd() {
-//        image.setColorFilter(Color.argb(200, 255, 255, 255));
-//        tvExpDate.setTextColor(getContext().getResources().getColor(R.color.activate_end_text_color));
-//    }
 
     public void setImageWhiteFilter(int alpha) {
         image.setColorFilter(Color.argb(alpha, 255, 255, 255));
@@ -67,6 +63,8 @@ public class ItemView extends FrameLayout {
     }
 
     private boolean click = true;
+    private final float centerDisplayX = getContext().getResources().getDisplayMetrics().widthPixels / 2;
+    private final float centerDisplayY = getContext().getResources().getDisplayMetrics().heightPixels / 2;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -111,12 +109,20 @@ public class ItemView extends FrameLayout {
                 setX(posX);
                 setY(posY);
 
+                float centerViewX = getX() + (float) getWidth() / 2;
+                float centerViewY = getY() + (float) getHeight() / 2;
+
+                setRotation(getAngle(centerViewX, centerDisplayX, 30));
+                if (centerViewY >= centerDisplayY) {
+                    setRotationX(getAngle(centerViewY, centerDisplayY, 40));
+                }
                 break;
             }
 
             case MotionEvent.ACTION_UP: {
                 checkCardForEvent();
-
+                setRotation(0);
+                setRotationX(0);
                 if (click) performClick();
 
                 break;
@@ -125,6 +131,12 @@ public class ItemView extends FrameLayout {
                 return false;
         }
         return true;
+    }
+
+    private float getAngle(float centerView, float centerDisplay, float angle) {
+        float v = centerView - centerDisplay;
+        float v1 = angle / centerDisplay;
+        return v * v1;
     }
 
     public void checkCardForEvent() {
